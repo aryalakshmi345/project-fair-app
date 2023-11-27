@@ -1,12 +1,14 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Form } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import logimg from '../Assets/logimg.png'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { registerAPI } from '../Services/allAPI';
+import { loginAPI, registerAPI } from '../Services/allAPI';
+import { tokenAuthorisationContext } from '../Context/TokenAuth';
 
 function Auth({register}) {
+    const {isAuthorized, setIsAuthorized} = useContext(tokenAuthorisationContext)
     const [userData,setUserData] = useState({
         username:"",email:"",password:""
     })
@@ -25,6 +27,28 @@ function Auth({register}) {
                  username:"",email:"",password:""
                 })
                 navigate('/login')
+            }else{
+                toast.warning(result.response.data)
+                console.log(result);
+            }
+        }
+    }
+
+    const handleLogin = async (e)=>{
+        e.preventDefault()
+        const {email,password}=userData
+        if(!email || !password){
+            toast.info("Please Fill the form completely...!")
+        }else{
+            const result = await loginAPI(userData)
+            if(result.status===200){
+                sessionStorage.setItem("existingUser",JSON.stringify(result.data.existingUser))
+                sessionStorage.setItem("token",result.data.token)
+                setIsAuthorized(true)
+                setUserData({
+                 email:"",password:""
+                })
+                navigate('/')
             }else{
                 toast.warning(result.response.data)
                 console.log(result);
@@ -66,10 +90,10 @@ function Auth({register}) {
                                 isRegisterForm?
                                  <div>
                                     <button className='mb-2 btn btn-warning w-100' onClick={handleRegister}>Register</button>
-                                    <p className='text-center'>Already have account? Click here to  <Link to={'/login'}>Login</Link></p>
+                                    <p className='text-center' >Already have account? Click here to  <Link to={'/login'}>Login</Link></p>
                                  </div>:
                                  <div>
-                                 <button className='mb-2 btn btn-warning w-100'>Login</button>
+                                 <button className='mb-2 btn btn-warning w-100' onClick={handleLogin}>Login</button>
                                  <p className='text-center'>New user ? Click here to  <Link to={'/register'}>Register</Link></p>
                               </div>
                             }
@@ -78,8 +102,8 @@ function Auth({register}) {
                 </div>
             </div>
          </div>
-        </div>
-        </div> 
+      </div>
+    </div> 
         <ToastContainer 
       position='top-center'
       autoClose={2000}

@@ -3,6 +3,10 @@ import { Collapse } from 'react-bootstrap';
 
 function Profile() {
     const [open, setOpen] = useState(false);
+    const [userProfile,setUserProfile] = useState({
+      username:"",email:"",password:"",Profile:"",github:"",linkedin:""
+    })
+    
   return (
     <>
      <div className='border rounded shadow mb-5'> 
